@@ -92,13 +92,15 @@
 
 
 
+
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./utils/swagger');   // ← Changed: import directly (not { swaggerSpec })
+const swaggerSpec = require('./utils/swagger');   // Must export the spec directly
 const database = require('./config/database');
 const routes = require('./routes');
 const errorMiddleware = require('./middlewares/error.middleware');
@@ -116,6 +118,7 @@ const allowedOrigins = process.env.FRONTEND_URLS
       .filter(Boolean)
   : ['http://localhost:3000'];
 
+// CORS Middleware
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -130,8 +133,10 @@ app.use(cors({
   exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
 
+// Security
 app.use(helmet());
 
+// Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -141,16 +146,25 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
+// Body Parsers
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ✅ Swagger UI - Place it BEFORE your main routes
+// ==================== SWAGGER SETUP ====================
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   explorer: true,
   swaggerOptions: {
-    url: '/api-docs/json',   // Explicitly tell Swagger where to fetch the spec
-  }
+    persistAuthorization: true,
+    displayRequestDuration: true,
+  },
 }));
+
+// Expose raw OpenAPI JSON spec (very useful for debugging)
+app.get('/api-docs/json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+// =======================================================
 
 // Health Check
 app.get('/health', (req, res) => {
@@ -175,13 +189,14 @@ app.use(errorMiddleware);
 // Start Server
 database.connect().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📚 Swagger Docs: https://${process.env.RENDER_EXTERNAL_HOSTNAME || 'localhost:' + PORT}/api-docs`);
-    console.log(`🏥 Health: /health`);
+    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`📚 Swagger UI: http://localhost:${PORT}/api-docs`);
+    console.log(`📄 Raw Spec: http://localhost:${PORT}/api-docs/json`);
+    console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
     console.log(`✅ Allowed CORS Origins: ${allowedOrigins.join(', ')}`);
   });
 }).catch((error) => {
-  console.error('❌ Database connection failed:', error);
+  console.error('❌ Failed to connect to database:', error);
   process.exit(1);
 });
 
