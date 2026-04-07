@@ -12,16 +12,12 @@
 //         email: 'support@corporateinvestment.com',
 //       },
 //     },
-//       servers: [
-//         {
-//           url: 'http://localhost:5000/api/v1',
-//           description: 'Development server',
-//         },
-//         {
-//           url: 'https://investmentwebsite-backend.onrender.com/api/v1',
-//           description: 'Staging server',
-//         },
-//       ],
+//     servers: [
+//       {
+//         url: 'http://localhost:5000/api/v1',
+//         description: 'Development server',
+//       },
+//     ],
 //     components: {
 //       securitySchemes: {
 //         bearerAuth: {
@@ -59,8 +55,6 @@
 
 
 
-
-
 const swaggerJsdoc = require('swagger-jsdoc');
 
 const options = {
@@ -75,31 +69,55 @@ const options = {
         email: 'support@corporateinvestment.com',
       },
     },
+
+    // ✅ Multiple servers
     servers: [
       {
         url: 'http://localhost:5000/api/v1',
-        description: 'Development server',
+        description: 'Local Development',
+      },
+      {
+        url: 'http://localhost:3000/api/v1',
+        description: 'Alt Local (if proxying)',
       },
       {
         url: 'https://investmentwebsite-backend.onrender.com/api/v1',
-        description: 'Production server',
+        description: 'Local IP',
+      },
+      {
+        url: 'https://dev-api.yourdomain.com/api/v1',
+        description: 'Development Server',
+      },
+      {
+        url: 'https://staging-api.yourdomain.com/api/v1',
+        description: 'Staging Server',
+      },
+      {
+        url: 'https://api.yourdomain.com/api/v1',
+        description: 'Production Server',
       },
     ],
+
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'Enter JWT token as: Bearer <your-token>',
         },
       },
     },
-    security: [{ bearerAuth: [] }],   // Global security (you can override per route)
+
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
-  apis: ['./src/routes/*.js'],   // Ensure this path matches your actual route files
+
+  apis: ['./src/routes/*.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
 
-module.exports = swaggerSpec;   // ← Export the spec directly (not wrapped in an object)
+module.exports = { swaggerSpec };

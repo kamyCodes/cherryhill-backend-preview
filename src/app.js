@@ -18,7 +18,7 @@
 // // Middlewares
 // app.use(helmet());
 // app.use(cors({
-//   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+//   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
 //   credentials: true,
 // }));
 
@@ -94,13 +94,16 @@
 
 
 
+
+
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./utils/swagger');   // Must export the spec directly
+const { swaggerSpec } = require('./utils/swagger');
 const database = require('./config/database');
 const routes = require('./routes');
 const errorMiddleware = require('./middlewares/error.middleware');
@@ -111,62 +114,56 @@ dotenv.config();
 const app = express();
 const PORT = parseInt(process.env.PORT || '5000', 10);
 
-// Multiple Frontend URLs for CORS
+/**
+ * ✅ Allowed origins (supports ENV or fallback)
+ * Example .env:
+ * FRONTEND_URLS=http://localhost:5173,http://localhost:3000,https://yourdomain.com
+ */
 const allowedOrigins = process.env.FRONTEND_URLS
   ? process.env.FRONTEND_URLS.split(',')
-      .map(url => url.trim())
-      .filter(Boolean)
-  : ['http://localhost:3000'];
+  : [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://yourdomain.com',
+      'http://localhost:5000',
+    ];
 
-// CORS Middleware
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    callback(new Error(`CORS Error: Origin ${origin} not allowed`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
-}));
-
-// Security
+// Security middleware
 app.use(helmet());
 
-// Rate Limiting
+// ✅ CORS configuration (multiple origins)
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests without origin (Postman, curl, mobile apps)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+  })
+);
+
+// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
 });
 app.use('/api', limiter);
 
-// Body Parsers
+// Body parsers
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ==================== SWAGGER SETUP ====================
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  explorer: true,
-  swaggerOptions: {
-    persistAuthorization: true,
-    displayRequestDuration: true,
-  },
-}));
+// Swagger docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Expose raw OpenAPI JSON spec (very useful for debugging)
-app.get('/api-docs/json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec);
-});
-// =======================================================
-
-// Health Check
+// Health check
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -175,29 +172,30 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Main API Routes
+// API routes
 app.use('/api/v1', routes);
 
-// 404 Handler
+// 404 handler
 app.use((req, res, next) => {
   next(new ApiError(404, `Route ${req.originalUrl} not found`));
 });
 
-// Global Error Handler
+// Global error handler
 app.use(errorMiddleware);
 
-// Start Server
-database.connect().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
-    console.log(`📚 Swagger UI: http://localhost:${PORT}/api-docs`);
-    console.log(`📄 Raw Spec: http://localhost:${PORT}/api-docs/json`);
-    console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
-    console.log(`✅ Allowed CORS Origins: ${allowedOrigins.join(', ')}`);
+// Start server after DB connects
+database
+  .connect()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server is running on port ${PORT}`);
+      console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
+      console.log(`🏥 Health: http://localhost:${PORT}/health`);
+    });
+  })
+  .catch((error) => {
+    console.error('❌ Failed to connect to database:', error);
+    process.exit(1);
   });
-}).catch((error) => {
-  console.error('❌ Failed to connect to database:', error);
-  process.exit(1);
-});
 
 module.exports = app;
