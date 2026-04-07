@@ -126,6 +126,7 @@ const allowedOrigins = process.env.FRONTEND_URLS
       'http://localhost:3000',
       'https://yourdomain.com',
       'http://localhost:5000',
+      'https://investmentwebsite-backend.onrender.com'
     ];
 
 // Security middleware
