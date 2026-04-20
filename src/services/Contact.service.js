@@ -1,87 +1,76 @@
-const Leadership = require('../models/Leadership.model');
+// src/services/Contact.service.js
+const Contact = require('../models/Contact.model');
 const ApiError = require('../utils/ApiError');
-const CloudinaryConfig = require('../config/cloudinary');
 
-class LeadershipService {
+class ContactService {
   constructor() {}
 
   static getInstance() {
-    if (!LeadershipService.instance) {
-      LeadershipService.instance = new LeadershipService();
+    if (!ContactService.instance) {
+      ContactService.instance = new ContactService();
     }
-    return LeadershipService.instance;
+    return ContactService.instance;
   }
 
-  async getAllLeadership(activeOnly = false) {
-    const filter = activeOnly ? { isActive: true } : {};
-    return await Leadership.find(filter).sort('order');
+  async getAllContacts(isRead) {
+    const filter = {};
+    if (isRead !== undefined) {
+      filter.isRead = isRead;
+    }
+    return await Contact.find(filter).sort({ createdAt: -1 });
   }
 
-  async getLeadershipById(id) {
-    const leader = await Leadership.findById(id);
-    if (!leader) {
-      throw new ApiError(404, 'Leadership member not found');
+  async getContactById(id) {
+    const contact = await Contact.findById(id);
+    if (!contact) {
+      throw new ApiError(404, 'Contact not found');
     }
-    return leader;
+    return contact;
   }
 
-  async createLeadership(leadershipData, imageFile) {
-    if (!imageFile) {
-      throw new ApiError(400, 'Image is required');
-    }
-
-    const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'leadership');
-    leadershipData.image = url;
-
-    const leader = await Leadership.create(leadershipData);
-    return leader;
+  async createContact(contactData) {
+    const contact = await Contact.create(contactData);
+    return contact;
   }
 
-  async updateLeadership(id, updateData, imageFile) {
-    const leader = await Leadership.findById(id);
-    if (!leader) {
-      throw new ApiError(404, 'Leadership member not found');
-    }
-
-    if (imageFile) {
-      if (leader.image) {
-        const publicId = leader.image.split('/').pop()?.split('.')[0];
-        if (publicId) {
-          await CloudinaryConfig.deleteImage(`leadership/${publicId}`);
-        }
-      }
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'leadership');
-      updateData.image = url;
-    }
-
-    const updatedLeader = await Leadership.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
+  async markAsRead(id) {
+    const contact = await Contact.findByIdAndUpdate(
+        id,
+        { isRead: true },
+        { new: true, runValidators: true }
     );
-
-    if (!updatedLeader) {
-      throw new ApiError(404, 'Leadership member not found');
+    if (!contact) {
+      throw new ApiError(404, 'Contact not found');
     }
-
-    return updatedLeader;
+    return contact;
   }
 
-  async deleteLeadership(id) {
-    const leader = await Leadership.findById(id);
-    if (!leader) {
-      throw new ApiError(404, 'Leadership member not found');
+  async markAsReplied(id) {
+    const contact = await Contact.findByIdAndUpdate(
+        id,
+        {
+          replied: true,
+          repliedAt: new Date()
+        },
+        { new: true, runValidators: true }
+    );
+    if (!contact) {
+      throw new ApiError(404, 'Contact not found');
     }
+    return contact;
+  }
 
-    if (leader.image) {
-      const publicId = leader.image.split('/').pop()?.split('.')[0];
-      if (publicId) {
-        await CloudinaryConfig.deleteImage(`leadership/${publicId}`);
-      }
+  async deleteContact(id) {
+    const contact = await Contact.findByIdAndDelete(id);
+    if (!contact) {
+      throw new ApiError(404, 'Contact not found');
     }
+    return contact;
+  }
 
-    await leader.deleteOne();
+  async getUnreadCount() {
+    return await Contact.countDocuments({ isRead: false });
   }
 }
 
-module.exports = LeadershipService.getInstance();
+module.exports = ContactService.getInstance();
