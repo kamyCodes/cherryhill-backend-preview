@@ -13,7 +13,7 @@ const ApiError = require('./utils/ApiError');
 dotenv.config();
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '5000', 10);
+const PORT = parseInt(process.env.PORT || '7000', 10);
 
 /**
  * ✅ Allowed origins (supports ENV or fallback)
@@ -29,7 +29,9 @@ const allowedOrigins = process.env.FRONTEND_URLS
       'http://localhost:5000',
       'https://investmentwebsite-backend.onrender.com',
       'https://samp2.dealdrivetechnology.com',
-      'https://samples.dealdrivetechnology.com'
+      'https://samples.dealdrivetechnology.com',
+      'http://localhost:7000',
+      'https://localhost:7000'
     ];
 
 // Security middleware
