@@ -35,7 +35,7 @@ class PressReleaseService {
 
   async createPressRelease(pressReleaseData, imageFile) {
     if (imageFile) {
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'press-releases');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'press-releases');
       pressReleaseData.image = url;
     }
 
@@ -56,7 +56,7 @@ class PressReleaseService {
           await CloudinaryConfig.deleteImage(`press-releases/${publicId}`);
         }
       }
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'press-releases');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'press-releases');
       updateData.image = url;
     }
 

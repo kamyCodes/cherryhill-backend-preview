@@ -27,7 +27,7 @@ class AwardService {
 
   async createAward(awardData, imageFile) {
     if (imageFile) {
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'awards');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'awards');
       awardData.image = url;
     }
 
@@ -48,7 +48,7 @@ class AwardService {
           await CloudinaryConfig.deleteImage(`awards/${publicId}`);
         }
       }
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'awards');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'awards');
       updateData.image = url;
     }
 

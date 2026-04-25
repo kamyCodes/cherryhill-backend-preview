@@ -35,7 +35,7 @@ class WebinarService {
 
   async createWebinar(webinarData, imageFile) {
     if (imageFile) {
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'webinars');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'webinars');
       webinarData.image = url;
     }
 
@@ -56,7 +56,7 @@ class WebinarService {
           await CloudinaryConfig.deleteImage(`webinars/${publicId}`);
         }
       }
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'webinars');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'webinars');
       updateData.image = url;
     }
 

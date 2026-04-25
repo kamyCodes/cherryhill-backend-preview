@@ -28,12 +28,12 @@ class CompanyInfoService {
     }
 
     if (logoFile) {
-      const { url } = await CloudinaryConfig.uploadImage(logoFile.path, 'company');
+      const { url } = await CloudinaryConfig.uploadImage(logoFile, 'company');
       companyData.logo = url;
     }
 
     if (faviconFile) {
-      const { url } = await CloudinaryConfig.uploadImage(faviconFile.path, 'company');
+      const { url } = await CloudinaryConfig.uploadImage(faviconFile, 'company');
       companyData.favicon = url;
     }
 
@@ -51,7 +51,7 @@ class CompanyInfoService {
           await CloudinaryConfig.deleteImage(`company/${publicId}`);
         }
       }
-      const { url } = await CloudinaryConfig.uploadImage(logoFile.path, 'company');
+      const { url } = await CloudinaryConfig.uploadImage(logoFile, 'company');
       updateData.logo = url;
     }
 
@@ -62,7 +62,7 @@ class CompanyInfoService {
           await CloudinaryConfig.deleteImage(`company/${publicId}`);
         }
       }
-      const { url } = await CloudinaryConfig.uploadImage(faviconFile.path, 'company');
+      const { url } = await CloudinaryConfig.uploadImage(faviconFile, 'company');
       updateData.favicon = url;
     }
 
@@ -82,10 +82,24 @@ class CompanyInfoService {
   async updateStats(statsData) {
     const companyInfo = await this.getCompanyInfo();
     
-    companyInfo.stats = {
-      ...companyInfo.stats,
-      ...statsData
-    };
+    // Ensure numeric fields are correctly parsed and handle the nested structure if provided
+    const newStats = { ...companyInfo.stats };
+    
+    const fields = ['clients', 'yearsOfExperience', 'teamMembers'];
+    fields.forEach(field => {
+      if (statsData[field] !== undefined) {
+        newStats[field] = Number(statsData[field]);
+      }
+    });
+    
+    if (statsData.assetsManaged !== undefined) {
+      newStats.assetsManaged = String(statsData.assetsManaged);
+    }
+    
+    companyInfo.stats = newStats;
+    
+    // Mark as modified if it's a nested object
+    companyInfo.markModified('stats');
     
     await companyInfo.save();
     return companyInfo;

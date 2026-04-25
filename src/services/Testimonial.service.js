@@ -27,7 +27,7 @@ class TestimonialService {
 
   async createTestimonial(testimonialData, imageFile) {
     if (imageFile) {
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'testimonials');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'testimonials');
       testimonialData.clientImage = url;
     }
 
@@ -48,7 +48,7 @@ class TestimonialService {
           await CloudinaryConfig.deleteImage(`testimonials/${publicId}`);
         }
       }
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'testimonials');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'testimonials');
       updateData.clientImage = url;
     }
 

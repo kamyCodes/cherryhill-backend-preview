@@ -35,7 +35,7 @@ class ServiceService {
 
   async createService(serviceData, imageFile) {
     if (imageFile) {
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'services');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'services');
       serviceData.image = url;
     }
 
@@ -56,7 +56,7 @@ class ServiceService {
           await CloudinaryConfig.deleteImage(`services/${publicId}`);
         }
       }
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'services');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'services');
       updateData.image = url;
     }
 

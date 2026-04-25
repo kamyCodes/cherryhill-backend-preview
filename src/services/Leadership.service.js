@@ -26,12 +26,10 @@ class LeadershipService {
   }
 
   async createLeadership(leadershipData, imageFile) {
-    if (!imageFile) {
-      throw new ApiError(400, 'Image is required');
+    if (imageFile) {
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'leadership');
+      leadershipData.image = url;
     }
-
-    const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'leadership');
-    leadershipData.image = url;
 
     const leader = await Leadership.create(leadershipData);
     return leader;
@@ -50,7 +48,7 @@ class LeadershipService {
           await CloudinaryConfig.deleteImage(`leadership/${publicId}`);
         }
       }
-      const { url } = await CloudinaryConfig.uploadImage(imageFile.path, 'leadership');
+      const { url } = await CloudinaryConfig.uploadImage(imageFile, 'leadership');
       updateData.image = url;
     }
 

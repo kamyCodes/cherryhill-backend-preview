@@ -21,18 +21,37 @@ class CloudinaryConfig {
     return cloudinary;
   }
 
-  async uploadImage(filePath, folder = 'corporate-platform') {
+  async uploadImage(file, folder = 'corporate-platform') {
     try {
-      const result = await cloudinary.uploader.upload(filePath, {
+      let uploadOptions = {
         folder,
         resource_type: 'auto',
-      });
+      };
+
+      let uploadResult;
+      if (file.buffer) {
+        // Handle memory storage (buffer)
+        uploadResult = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            uploadOptions,
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            }
+          );
+          uploadStream.end(file.buffer);
+        });
+      } else {
+        // Handle disk storage (path)
+        uploadResult = await cloudinary.uploader.upload(file.path || file, uploadOptions);
+      }
+
       return {
-        url: result.secure_url,
-        publicId: result.public_id,
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
       };
     } catch (error) {
-      throw new Error(`Failed to upload image to Cloudinary: ${error}`);
+      throw new Error(`Failed to upload image to Cloudinary: ${error.message}`);
     }
   }
 
