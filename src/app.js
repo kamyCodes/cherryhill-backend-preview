@@ -33,6 +33,7 @@ const allowedOrigins = process.env.FRONTEND_URLS
       'http://localhost:7000',
       'https://localhost:7000',
       'https://cherryhillsportfolio.com',
+      'https://cadmin.cherryhillsportfolio.com'
     ];
 
 // Security middleware
