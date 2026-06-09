@@ -31,7 +31,8 @@ const allowedOrigins = process.env.FRONTEND_URLS
       'https://samp2.dealdrivetechnology.com',
       'https://samples.dealdrivetechnology.com',
       'http://localhost:7000',
-      'https://localhost:7000'
+      'https://localhost:7000',
+      'https://cherryhillsportfolio.com',
     ];
 
 // Security middleware
