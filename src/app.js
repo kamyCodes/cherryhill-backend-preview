@@ -35,7 +35,9 @@ const allowedOrigins = process.env.FRONTEND_URLS
       'https://cherryhillsportfolio.com',
       'https://cadmin.cherryhillsportfolio.com',
       'https://cherryhill-frontend-preview-kamyomobongs-projects.vercel.app',
-      'https://cheeryhill-admin-preview-kamyomobongs-projects.vercel.app'
+      'https://cheeryhill-admin-preview-kamyomobongs-projects.vercel.app',
+      'https://cherryhill-frontend-preview.vercel.app',
+      'https://cheeryhill-admin-preview.vercel.app'
     ];
 
 // Security middleware
