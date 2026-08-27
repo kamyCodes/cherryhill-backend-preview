@@ -49,6 +49,7 @@ const CompanyInfoSchema = new mongoose.Schema(
       assetsManaged: { type: String, default: '$0' },
       yearsOfExperience: { type: Number, default: 0 },
       teamMembers: { type: Number, default: 0 },
+      investorSatisfaction: { type: Number, default: 100 },
     },
     mission: {
       type: String,

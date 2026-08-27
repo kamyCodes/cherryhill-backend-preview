@@ -24,6 +24,7 @@ const allowedOrigins = process.env.FRONTEND_URLS
   ? process.env.FRONTEND_URLS.split(',')
   : [
       'http://localhost:5173',
+      'http://localhost:5174',
       'http://localhost:3000',
       'https://cherry.dealdrivetechnology.com',
       'http://localhost:5000',
